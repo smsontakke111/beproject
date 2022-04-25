@@ -1,0 +1,15 @@
+
+#social{
+  color: white;
+}
+
+#social:hover {
+  color: rgb(150, 150, 150);
+  transition: all 0.25s;
+}
+
+
+.background{
+
+    background-image: linear-gradient( to bottom right , rgb(59, 59, 59) , rgb(126, 126, 126) , rgb(59, 59, 59));
+}
