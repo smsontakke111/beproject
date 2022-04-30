@@ -26,7 +26,7 @@ const Home = () => {
                 <br/>
                 <br/>
 
-                <div className='container p-2 ' >
+                {/* <div className='container p-2 ' >
                     <Form >
                             <Input className='m-2'  type='file' style={{width:'320px'}} />
                                 
@@ -42,38 +42,48 @@ const Home = () => {
                         {/* <div className='col-12 p-3'>
                         <Button className='m-2 rounded col-3' color ='danger'>Download</Button>
 
-                        </div> */}
+                        </div> 
                             
                             
                         
                     </Form>
-                </div>
+                </div> */}
 
-                        <br/><br/><br/>
+                        <br/><br/>
                         <h1 style={{color: 'white'}}>How to Compress :</h1>
                         <br/><br/>
                 <div className='row' style={{color: 'white'}}>
-                        <div className='col-12 col-lg-4 p-1' >
-                            <Card style={{backgroundColor: 'rgb(20,20,20)'}}>
+                        <div className='col-12 col-lg-3 p-1' >
+                            <Card className="p-5" style={{backgroundColor: 'rgb(20,20,20)'}}>
                                 <CardBody>
-                                    Instruction 1
+                                    <h3>Log In with Google</h3>
                                 </CardBody>
                             </Card>
                         </div>
-                        <div className='col-12 col-lg-4 p-1'>
-                        <Card style={{backgroundColor: 'rgb(20,20,20)'}}>
+                        <div className='col-12 col-lg-3 p-1'>
+                        <Card className="p-5" style={{backgroundColor: 'rgb(20,20,20)'}}>
                                 <CardBody>
-                                    Instruction 2
+                                    <h3>Select File to Compress</h3>
                                 </CardBody>
                             </Card>
                         </div>
-                        <div className='col-12 col-lg-4 p-1'>
-                        <Card style={{backgroundColor: 'rgb(20,20,20)'}}>
+                        <div className='col-12 col-lg-3 p-1'>
+                        <Card className="p-5" style={{backgroundColor: 'rgb(20,20,20)'}}>
                                 <CardBody>
-                                    Instruction 3
+                                   <h3>Click on Compress</h3> 
                                 </CardBody>
                             </Card>
                         </div>
+                        
+                        <div className='col-12 col-lg-3 p-1'>
+                        <Card className="p-5" style={{backgroundColor: 'rgb(20,20,20)'}}>
+                                <CardBody>
+                                   <h3>See Details of Compression</h3>
+                                </CardBody>
+                            </Card>
+                        </div>
+
+                        
                         
                 </div>
             

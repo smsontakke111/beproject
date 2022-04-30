@@ -8,8 +8,25 @@
   transition: all 0.25s;
 }
 
+body{
+  overflow-x: hidden;
+}
 
 .background{
 
     background-image: linear-gradient( to bottom right , rgb(59, 59, 59) , rgb(126, 126, 126) , rgb(59, 59, 59));
+} 
+
+.background2{
+ color: white;
+ border-radius: 10px;
+  background-image: linear-gradient( to bottom right , rgb(126, 126, 126) , rgb(116, 116, 116));
+}
+
+th{
+  font-size: large;
+}
+
+td{
+  font-size: x-large;
 }

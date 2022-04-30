@@ -1,5 +1,5 @@
 import React, { useEffect, useState }  from 'react';
-import { Button, Card, Table, Form, Input, InputGroup, Label , Dropdown , DropdownItem , DropdownMenu , DropdownToggle } from 'reactstrap';
+import { Button, Card, Table, Form, Input, InputGroup, Label , Dropdown , DropdownItem , DropdownMenu , DropdownToggle, Spinner } from 'reactstrap';
 import '../App.css';
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "firebase/app";
@@ -8,6 +8,7 @@ import '../App.css';
   import { getStorage, ref, uploadBytesResumable, getDownloadURL , listAll } from "firebase/storage";
 import Swal from 'sweetalert2';
 import { useHistory } from 'react-router';
+import axios from 'axios';
   
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
@@ -41,81 +42,171 @@ const Temp = (props) => {
 
     const [fileNames , setfileNames] = useState([]);
 
+    const [fnm , setFnm] = useState("");
+
     const [dURL,setdURL] = useState("");
+
+    const [isStat,setisStat] = useState(0);
+
+    const [stat , setStat ] = useState(null);
 
     const history = useHistory();
 
     const toggleDropdown = () => setDropdownOpen(prevState => !prevState);
 
+    const compressFile = (file) => {
+        // var a = document.createElement("a");
+        // var url = URL.createObjectURL(file);
+        // a.href = url;
+        // a.download = file.name;
+        // document.body.appendChild(a);
+        // a.click();
+
+        var fData = new FormData();
+
+        console.log(file);
+
+        fData.append("file" , file);
+        fData.append("filename" , file.name);
+
+        // var b ={ 
+        //     filename : file.name,
+        //     file : new FormData().append('file',file)
+        // }
+        
+        
+        fetch("http://localhost:3000/compress" , { method:"POST" , body:fData })
+        .then(res => res.blob())
+        .then(res => {
+            if (
+                window.navigator && 
+                window.navigator.msSaveOrOpenBlob
+              ) return window.navigator.msSaveOrOpenBlob(res);
+          
+              // For other browsers:
+              // Create a link pointing to the ObjectURL containing the blob.
+              const data = window.URL.createObjectURL(res);
+              setLoad(false);
+              const link = document.createElement('a');
+              link.href = data;
+              link.download = "Compressed_" + file.name;
+          
+              // this is necessary as link.click() does not work on the latest firefox
+              link.dispatchEvent(
+                new MouseEvent('click', { 
+                  bubbles: true, 
+                  cancelable: true, 
+                  view: window 
+                })
+              );
+          
+              setTimeout(() => {
+                // For Firefox it is necessary to delay revoking the ObjectURL
+                window.URL.revokeObjectURL(data);
+                link.remove();
+              }, 100);
+        })
+        .catch(err => console.log(err));
+
+    }
+
+    const getStat = (file) => {
+        var fData = new FormData();
+
+        console.log(file);
+
+        fData.append("file" , file);
+        fData.append("filename" , file.name);
+
+        // var b ={ 
+        //     filename : file.name,
+        //     file : new FormData().append('file',file)
+        // }
+        
+        
+        fetch("http://localhost:3000/compress/stat" , { method:"POST" , body:fData })
+        .then(res => res.json())
+        .then(res => {
+            console.log(res);
+            setStat(res);
+            setisStat(2);
+        })
+        .catch(err => setisStat(2));
+    }
+
     const Process = (e) => {
-        // setLoad(true);
+         setLoad(true);
         // setTimeout(() => {
         //     setLoad(false);
         //     setisProcess(!isProcess);
         // } , 5000);
         e.preventDefault();
-        console.log(e.target.file.files[0]);
+        //console.log(e.target.file.files[0]);
 
         if(props.user)
         {
-            const storage = getStorage();
+            setFnm(e.target.file.files[0].name);
+            setisStat(1);
+            compressFile(e.target.file.files[0]);
+            getStat(e.target.file.files[0]);
+            // const storage = getStorage();
   
-            var uname = props.user.email;
-            uname = uname.split('@')[0];
+            // var uname = props.user.email;
+            // uname = uname.split('@')[0];
             
-            // Create the file metadata
-            /** @type {any} */
-            const metadata = {
-                uname: uname
-            };
+            // // Create the file metadata
+            // /** @type {any} */
+            // const metadata = {
+            //     uname: uname
+            // };
             
-            // Upload file and metadata to the object 'images/mountains.jpg'
-            const storageRef = ref(storage, 'files/' +uname + "$" +e.target.file.files[0].name );
-            const uploadTask = uploadBytesResumable(storageRef,e.target.file.files[0] , metadata);
+            // // Upload file and metadata to the object 'images/mountains.jpg'
+            // const storageRef = ref(storage, 'files/' +uname + "$" +e.target.file.files[0].name );
+            // const uploadTask = uploadBytesResumable(storageRef,e.target.file.files[0] , metadata);
             
 
             
-            uploadTask.on('state_changed',
-            (snapshot) => {
-                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('Upload is ' + progress + '% done');
-                switch (snapshot.state) {
-                case 'paused':
-                    console.log('Upload is paused');
-                    break;
-                case 'running':
-                    console.log('Upload is running');
-                    break;
-                }
-            }, 
-            (error) => {
-                // A full list of error codes is available at
-                // https://firebase.google.com/docs/storage/web/handle-errors
-                switch (error.code) {
-                case 'storage/unauthorized':
-                    // User doesn't have permission to access the object
-                    break;
-                case 'storage/canceled':
-                    // User canceled the upload
-                    break;
+            // uploadTask.on('state_changed',
+            // (snapshot) => {
+            //     // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            //     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            //     console.log('Upload is ' + progress + '% done');
+            //     switch (snapshot.state) {
+            //     case 'paused':
+            //         console.log('Upload is paused');
+            //         break;
+            //     case 'running':
+            //         console.log('Upload is running');
+            //         break;
+            //     }
+            // }, 
+            // (error) => {
+            //     // A full list of error codes is available at
+            //     // https://firebase.google.com/docs/storage/web/handle-errors
+            //     switch (error.code) {
+            //     case 'storage/unauthorized':
+            //         // User doesn't have permission to access the object
+            //         break;
+            //     case 'storage/canceled':
+            //         // User canceled the upload
+            //         break;
 
-                // ...
+            //     // ...
 
-                case 'storage/unknown':
-                    // Unknown error occurred, inspect error.serverResponse
-                    break;
-                }
-            }, 
-            () => {
-                // Upload completed successfully, now we can get the download URL
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                console.log('File available at', downloadURL);
-                setdURL(downloadURL);
-                setisProcess(!isProcess);
-                });
-            }
-            );
+            //     case 'storage/unknown':
+            //         // Unknown error occurred, inspect error.serverResponse
+            //         break;
+            //     }
+            // }, 
+            // () => {
+            //     // Upload completed successfully, now we can get the download URL
+            //     getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            //     console.log('File available at', downloadURL);
+            //     setdURL(downloadURL);
+            //     setisProcess(!isProcess);
+            //     });
+            // }
+            // );
         }
         else{
             Swal.fire("","Login First !" ,"warning");
@@ -219,13 +310,11 @@ useEffect(()=>{
                             <Input className='m-2' onChange={() => setisProcess(false)} name='file'  type='file' style={{width:'320px'}} />
                                 
                                 <br/><br/>
-                            <Button className='m-2 rounded col-3' color='danger' type="submit" style={ isProcess ? {display:'none'} : {display : 'block'}} >Upload</Button>
+                            <Button className='m-2 rounded col-3' color='danger' type="submit" style={ isProcess ? {display:'none'} : {display : 'block'}} disabled={isStat == 1 ? true : false} >{isStat == 1 ? "Compressing..." : "Compress"}</Button>
                             <a href={dURL} target="_blank" style={{textDecoration:"none"}}><Button type="button" className='m-2 rounded col-3' color='danger' style={ isProcess ? {display:'block'} : {display : 'none'}} >Download</Button></a>
                             <br/><br/>
-
-                                <div class="spinner-border" role="status" style={ load ? { display:'block',  color:'white' , fontSize: '50%' } : { display:'none',  color:'white' , fontSize: '50%' }}>
-                                    <span class="sr-only">Loading...</span>
-                                </div>
+                                
+                            <i style={ load ? { display:'block',  color:'white' , fontSize: '20px' } : { display:'none',  color:'white' , fontSize: '20px' }}>File will get downloaded soon.....</i>
                         
                         
                             
@@ -233,8 +322,18 @@ useEffect(()=>{
                         
                     </Form>
                 </div>
+                {/* {
+                    img ? (
+                        <div className="container p-4">
+                            <img src={ URL.createObjectURL(img)} className="img-fluid" alt="Compressed image" />
+                        </div>
+                    ):(
+                        <div></div>
+                    ) */}
 
-                <div className='container p-4'>
+                
+
+                {/* <div className='container p-4'>
                     <h5 style={{ float:'left' , color:'white'}}>Earlier</h5>
 
                         <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown} style={{float : 'right'}}>
@@ -274,7 +373,70 @@ useEffect(()=>{
                             </tbody>
                         </Table>
                     </center>
+                </div> */}
+
+{/* {
+    "input": "./public/images/bag.jpg",
+    "path_out_new": "./public/compressed/bag.jpg",
+    "algorithm": "mozjpeg",
+    "size_in": 4837249,
+    "size_output": 1852884,
+    "percent": 61.7,
+    "err": null
+} */}
+
+{
+    isStat == 0 ? (
+        <div></div>
+    ) : (
+        isStat == 1 ? (
+            <Spinner  style={{color:"white"}} />
+        ) : (
+            <div className="p-4 border shadow-lg background2" >
+                    <center>
+                        <h3>File : {fnm}</h3>
+                        <br/>
+                        <Table hover responsive style={{color:"white"}}>
+                            <thead>
+                                <tr>
+                                    
+                                    <th>
+                                    <center>
+                                        Original Size
+                                    </center>
+                                    </th>
+                                    <th>
+                                    <center> Compressed Size</center>
+                                    </th>
+                                    <th>
+                                    <center>Compression Rate</center>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                    
+                                    <td>
+                                    <center>
+                                    { stat ? ((stat.size_in/1024)/1024).toFixed(2) : "-"  }  MB
+                                    </center>
+                                    </td>
+                                    <td>
+                                    <center> { stat ? ((stat.size_output/1024)/1024).toFixed(2) : "-"} MB</center>
+                                    </td>
+                                    <td>
+                                    <center> {stat ? stat.percent + " %" : "-"}</center>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </Table>
+                    </center>
                 </div>
+        )
+    ) 
+}
+                
+                <br/><br/><br/>
             </center>
         </div>
         </div>
